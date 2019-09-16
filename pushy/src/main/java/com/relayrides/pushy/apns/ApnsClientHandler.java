@@ -79,6 +79,8 @@ class ApnsClientHandler extends Http2ConnectionHandler {
 
     private static final long STREAM_ID_RESET_THRESHOLD = Integer.MAX_VALUE - 1;
 
+    private static final AsciiString APNS_PUSH_TYPE_HEADER = new AsciiString("apns-push-type");
+
     private static final int INITIAL_PAYLOAD_BUFFER_CAPACITY = 4096;
 
     private static final Gson gson = new GsonBuilder()
@@ -242,6 +244,10 @@ class ApnsClientHandler extends Http2ConnectionHandler {
 
             if (pushNotification.getPriority() != null) {
                 headers.addInt(APNS_PRIORITY_HEADER, pushNotification.getPriority().getCode());
+            }
+
+            if (pushNotification.getPushType() != null) {
+                headers.add(APNS_PUSH_TYPE_HEADER, pushNotification.getPushType().getHeaderValue());
             }
 
             if (pushNotification.getTopic() != null) {

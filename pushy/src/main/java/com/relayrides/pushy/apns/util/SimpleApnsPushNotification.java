@@ -25,6 +25,7 @@ import java.util.Objects;
 
 import com.relayrides.pushy.apns.ApnsPushNotification;
 import com.relayrides.pushy.apns.DeliveryPriority;
+import com.relayrides.pushy.apns.PushType;
 
 /**
  * A simple and immutable implementation of the {@link com.relayrides.pushy.apns.ApnsPushNotification} interface.
@@ -39,6 +40,7 @@ public class SimpleApnsPushNotification implements ApnsPushNotification {
     private final String payload;
     private final Date invalidationTime;
     private final DeliveryPriority priority;
+    private final PushType pushType;
     private final String topic;
     private final String collapseId;
 
@@ -55,7 +57,7 @@ public class SimpleApnsPushNotification implements ApnsPushNotification {
      * @see DeliveryPriority#IMMEDIATE
      */
     public SimpleApnsPushNotification(final String token, final String topic, final String payload) {
-        this(token, topic, payload, null, DeliveryPriority.IMMEDIATE, null);
+        this(token, topic, payload, null, DeliveryPriority.IMMEDIATE, null, null);
     }
     /**
      * Constructs a new push notification with the given token, topic, payload, and expiration time. An "immediate"
@@ -71,7 +73,7 @@ public class SimpleApnsPushNotification implements ApnsPushNotification {
      * @see DeliveryPriority#IMMEDIATE
      */
     public SimpleApnsPushNotification(final String token, final String topic, final String payload, final Date invalidationTime) {
-        this(token, topic, payload, invalidationTime, DeliveryPriority.IMMEDIATE, null);
+        this(token, topic, payload, invalidationTime, DeliveryPriority.IMMEDIATE, null, null);
     }
 
     /**
@@ -86,7 +88,7 @@ public class SimpleApnsPushNotification implements ApnsPushNotification {
      * @param priority the priority with which this notification should be delivered to the receiving device
      */
     public SimpleApnsPushNotification(final String token, final String topic, final String payload, final Date invalidationTime, final DeliveryPriority priority) {
-        this(token, topic, payload, invalidationTime, priority, null);
+        this(token, topic, payload, invalidationTime, priority, null, null);
     }
 
     /**
@@ -99,14 +101,16 @@ public class SimpleApnsPushNotification implements ApnsPushNotification {
      * @param invalidationTime the time at which Apple's servers should stop trying to deliver this message; if
      * {@code null}, no delivery attempts beyond the first will be made
      * @param priority the priority with which this notification should be delivered to the receiving device
+     * @param pushType the type of push notification to be delivered
      * @param collapseId the "collapse identifier" for this notification, which allows it to supersede or be superseded
      * by other notifications with the same identifier
      */
-    public SimpleApnsPushNotification(final String token, final String topic, final String payload, final Date invalidationTime, final DeliveryPriority priority, final String collapseId) {
+    public SimpleApnsPushNotification(final String token, final String topic, final String payload, final Date invalidationTime, final DeliveryPriority priority, final PushType pushType, final String collapseId) {
         this.token = token;
         this.payload = payload;
         this.invalidationTime = invalidationTime;
         this.priority = priority;
+        this.pushType = pushType;
         this.topic = topic;
         this.collapseId = collapseId;
     }
@@ -152,6 +156,20 @@ public class SimpleApnsPushNotification implements ApnsPushNotification {
     }
 
     /**
+     * Returns the display type this push notification. Note that push notification display types are required in iOS 13
+     * and later and watchOS 6 and later, but are ignored under earlier versions of either operating system. May be
+     * {@code null}.
+     *
+     * @return the display type this push notification
+     *
+     * @since 0.13.9
+     */
+    @Override
+    public PushType getPushType() {
+        return this.pushType;
+    }
+
+    /**
      * Returns the topic to which this push notification should be sent.
      *
      * @return the topic to which this push notification should be sent
@@ -182,6 +200,7 @@ public class SimpleApnsPushNotification implements ApnsPushNotification {
         result = prime * result + ((this.invalidationTime == null) ? 0 : this.invalidationTime.hashCode());
         result = prime * result + ((this.payload == null) ? 0 : this.payload.hashCode());
         result = prime * result + ((this.priority == null) ? 0 : this.priority.hashCode());
+        result = prime * result + ((this.pushType == null) ? 0 : this.pushType.hashCode());
         result = prime * result + ((this.token == null) ? 0 : this.token.hashCode());
         result = prime * result + ((this.topic == null) ? 0 : this.topic.hashCode());
         result = prime * result + ((this.collapseId == null) ? 0 : this.collapseId.hashCode());
@@ -218,6 +237,9 @@ public class SimpleApnsPushNotification implements ApnsPushNotification {
             return false;
         }
         if (this.priority != other.priority) {
+            return false;
+        }
+        if (this.pushType != other.pushType) {
             return false;
         }
         if (this.token == null) {
@@ -258,6 +280,8 @@ public class SimpleApnsPushNotification implements ApnsPushNotification {
         builder.append(this.invalidationTime);
         builder.append(", priority=");
         builder.append(this.priority);
+        builder.append(", pushType=");
+        builder.append(this.pushType);
         builder.append(", topic=");
         builder.append(this.topic);
         builder.append(", apns-collapse-id=");
